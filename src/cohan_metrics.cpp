@@ -10,6 +10,7 @@ namespace cohan{
         //Subscribers
         r_odom_sub_ = nh.subscribe(odom_topic, 1, &Metrics::odomCB, this);
         agents_sub_ = nh.subscribe(agents_topic, 1, &Metrics::agentsCB, this);
+        map_sub_ = nh.subscribe("/map",1, &Metrics::mapCB, this);
         
         //ROS params
         nh.param(std::string("human_fov"), fov_int, int(120)); 
@@ -121,7 +122,7 @@ namespace cohan{
         c_visibility = 0.0;
         c_shock = 0.0;
 
-        if(this->robotSeen(r_pose, h_pose)){
+        if(robotSeen(r_pose, h_pose)){
             seen_ratio += dt.toSec()/seen_full_increase_durr_.toSec();
             seen_ratio = std::min(seen_ratio, 1.0);
 
@@ -236,10 +237,10 @@ namespace cohan{
 
             // check if the robot is in the field of view of the human
             // (without obstacles)
-            if(this->inFOV(robot_pose_offset, human_pose_offset, human_fov_))
+            if(inFOV(robot_pose_offset, human_pose_offset, human_fov_))
             {
                 // check if there are obstacles blocking the human view of the robot
-                if(this->checkObstacleView(human_pose_offset, robot_pose_offset))
+                if(checkObstacleView(human_pose_offset, robot_pose_offset))
                 {
                     // the human sees the robot
                     return  true;
@@ -263,7 +264,7 @@ namespace cohan{
         A_map_x = (int)(A_real.x() / resolution_map); A_map_y = (int)(A_real.y() / resolution_map);
         int B_map_x; int B_map_y;
         B_map_x = (int)(B_real.x() / resolution_map); B_map_y = (int)(B_real.y() / resolution_map);
-
+        
         // if outside the map
         if(A_map_x < 0 || A_map_x >= (int)g_map_[0].size() || A_map_y < 0 || A_map_y >= (int)g_map_.size()
         || B_map_x < 0 || B_map_x >= (int)g_map_[0].size() || B_map_y < 0 || B_map_y >= (int)g_map_.size())

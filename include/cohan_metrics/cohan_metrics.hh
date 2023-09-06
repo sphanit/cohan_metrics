@@ -92,7 +92,7 @@ namespace cohan{
 
         nav_msgs::Odometry robot_odom;
         cohan_msgs::TrackedAgents agents_;
-        ros::Subscriber r_odom_sub_, agents_sub_;
+        ros::Subscriber r_odom_sub_, agents_sub_, map_sub_;
         std::ofstream log_file_;
 
         //Metric costs
