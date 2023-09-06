@@ -10,10 +10,30 @@ project(cohan_metrics)
 find_package(catkin REQUIRED COMPONENTS
   geometry_msgs
   nav_msgs
+  cohan_msgs
   roscpp
   rospy
   tf
 )
+
+find_package(Eigen3 REQUIRED)
+include_directories(${Eigen3_INCLUDE_DIRS})
+
+list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
+include_directories(${EIGEN3_INCLUDE_DIRS})
+
+# if (EXISTS "FindEigen3.cmake")
+#   find_package(Eigen3 REQUIRED)
+#   set(Eigen_INCLUDE_DIRS ${Eigen3_INCLUDE_DIRS})
+# elseif (EXISTS "FindEigen.cmake")
+#   find_package(Eigen REQUIRED)
+# elseif (EXISTS "FindEigen.cmake")
+#   message(WARNING "No findEigen cmake script found. You must provde one of them,
+#   e.g. by adding it to ${PROJECT_SOURCE_DIR}/cmake_modules.")
+# endif (EXISTS "FindEigen3.cmake")
+
+# set(EXTERNAL_INCLUDE_DIRS ${Eigen_INCLUDE_DIRS} ${SUITESPARSE_INCLUDE_DIRS})
+
 
 ## System dependencies are found with CMake's conventions
 # find_package(Boost REQUIRED COMPONENTS system)
@@ -105,10 +125,10 @@ find_package(catkin REQUIRED COMPONENTS
 ## CATKIN_DEPENDS: catkin_packages dependent projects also need
 ## DEPENDS: system dependencies of this project that dependent projects also need
 catkin_package(
-#  INCLUDE_DIRS include
-#  LIBRARIES cohan_metrics
-#  CATKIN_DEPENDS geometry_msgs nav_msgs roscpp rospy tf
-#  DEPENDS system_lib
+ INCLUDE_DIRS include
+ LIBRARIES cohan_metrics
+ CATKIN_DEPENDS geometry_msgs nav_msgs cohan_msgs roscpp rospy tf
+ DEPENDS system_lib
 )
 
 ###########
@@ -118,14 +138,14 @@ catkin_package(
 ## Specify additional locations of header files
 ## Your package locations should be listed before other locations
 include_directories(
-# include
+  include
   ${catkin_INCLUDE_DIRS}
 )
 
-## Declare a C++ library
-# add_library(${PROJECT_NAME}
-#   src/${PROJECT_NAME}/cohan_metrics.cpp
-# )
+# Declare a C++ library
+add_library(${PROJECT_NAME}
+  src/cohan_metrics.cpp
+)
 
 ## Add cmake target dependencies of the library
 ## as an example, code may need to be generated before libraries
