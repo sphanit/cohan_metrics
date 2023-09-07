@@ -12,6 +12,8 @@ namespace cohan{
         r_odom_sub_ = nh.subscribe(odom_topic, 1, &Metrics::odomCB, this);
         agents_sub_ = nh.subscribe(agents_topic, 1, &Metrics::agentsCB, this);
         map_sub_ = nh.subscribe("/map",1, &Metrics::mapCB, this);
+        
+        tf2_ros::TransformListener tfListener(tfBuffer);
 
         // TImer to check robot's visibility
         // timer = nh.createTimer(ros::Duration(0.01), &Metrics::checkrobotSeen, this);
@@ -50,31 +52,58 @@ namespace cohan{
     }
 
     void Metrics::odomCB(const nav_msgs::Odometry::ConstPtr& odom_msg){
+        auto now =  ros::Time::now();
+        geometry_msgs::TransformStamped robot_pose;
+        try{
+            robot_pose = tfBuffer.lookupTransform("map", "base_footprint", ros::Time(0));
+        }
+        catch (tf2::TransformException &ex) {
+            ROS_WARN("%s",ex.what());
+        }
+
         if(!processing_){
             robot_odom = *odom_msg;
-            auto now =  ros::Time::now();
 
-            auto q = robot_odom.pose.pose.orientation;
+            auto q = robot_pose.transform.rotation;
             double siny_cosp = 2 * (q.w * q.z + q.x * q.y);
             double cosy_cosp = 1 - 2 * (q.y * q.y + q.z * q.z);
             double theta_yaw = atan2(siny_cosp, cosy_cosp);
-            robot_pose_ =  PoseSE2(robot_odom.pose.pose.position.x, robot_odom.pose.pose.position.y, theta_yaw);
+            robot_pose_ =  PoseSE2(robot_pose.transform.translation.x, robot_pose.transform.translation.y, theta_yaw);
 
-            if(fabs(robot_odom.twist.twist.linear.x) > 0.001 || fabs(robot_odom.twist.twist.linear.x) > 0.001){
+            if(fabs(robot_odom.twist.twist.linear.x) > 0.01 || fabs(robot_odom.twist.twist.linear.y) > 0.01){
                 robotIsMoving = true;
-                robot_vel_.coeffRef(0) = robot_odom.twist.twist.linear.x;
-                robot_vel_.coeffRef(1) = robot_odom.twist.twist.linear.y;
+                
+                geometry_msgs::PointStamped vel;
+                vel.header.frame_id = "map";
+                vel.point.x = robot_odom.twist.twist.linear.x;
+                vel.point.y = robot_odom.twist.twist.linear.y;
+                vel.point.z = 0;
+
+                auto robot_pose_transform = robot_pose;
+                robot_pose_transform.transform.translation.x = 0;
+                robot_pose_transform.transform.translation.y = 0;
+                robot_pose_transform.transform.translation.z = 0;
+                
+                tf2::doTransform(vel, vel, robot_pose_transform);
+
+                robot_vel_.coeffRef(0) = vel.point.x;
+                robot_vel_.coeffRef(1) = vel.point.y;
+                robot_omega_ = robot_odom.twist.twist.angular.z;
             }
             else{
                 robotIsMoving = false;
                 robot_vel_.coeffRef(0) = 0;
                 robot_vel_.coeffRef(1) = 0;
-
+                robot_omega_ = 0;
             }
 
+            // std::cout<< Eigen::Vector2d(robot_odom.twist.twist.linear.x, robot_odom.twist.twist.linear.y).norm() << std::endl;
+            // std::cout<< robot_vel_.norm() << std::endl;
+
             //Logging the robot data
-            log_file_ << std::fixed << std::setprecision(5) << now.toSec() << " : R " << robot_odom.pose.pose.position.x << " " << robot_odom.pose.pose.position.y  << " " << theta_yaw << std::endl;
-            log_file_ << std::fixed << std::setprecision(5) << now.toSec() << " : VEL_R " << std::to_string(sqrt(pow(robot_odom.twist.twist.linear.x,2) + pow(robot_odom.twist.twist.linear.y,2))) << std::endl;
+            log_file_ << std::fixed << std::setprecision(5) << now.toSec() << " : R " << robot_pose_.x() << " " << robot_pose_.y()  << " " << robot_pose_.theta() << std::endl;
+            log_file_ << std::fixed << std::setprecision(5) << now.toSec() << " : SPEED_R " << std::to_string(robot_vel_.norm()) << std::endl;
+            log_file_ << std::fixed << std::setprecision(5) << now.toSec() << " : VEL_R " << robot_vel_.coeffRef(0) <<" "<<robot_vel_.coeffRef(1) <<" "<< robot_omega_ <<std::endl;
 
 
             if(std::fabs((robot_odom.header.stamp - agents_.header.stamp).toSec()) < 0.5){
@@ -90,7 +119,8 @@ namespace cohan{
 
                             //Logging the human data and the calculated metrics
                             log_file_ << std::fixed << std::setprecision(5) << now.toSec() << " : H"+std::to_string(agent.track_id)+" " << segment.pose.pose.position.x << " " << segment.pose.pose.position.y  << " " << theta_yaw << std::endl;
-                            log_file_ << std::fixed << std::setprecision(5) << now.toSec() << " : H"+std::to_string(agent.track_id)+"_VEL "<< std::to_string(sqrt(pow(segment.twist.twist.linear.x,2) + pow(segment.twist.twist.linear.y,2))) << std::endl;
+                            log_file_ << std::fixed << std::setprecision(5) << now.toSec() << " : H"+std::to_string(agent.track_id)+"_SPEED "<< std::to_string(sqrt(pow(segment.twist.twist.linear.x,2) + pow(segment.twist.twist.linear.y,2))) << std::endl;
+                            log_file_ << std::fixed << std::setprecision(5) << now.toSec() << " : H"+std::to_string(agent.track_id)+"_VEL "<< segment.twist.twist.linear.x << " " << segment.twist.twist.linear.y <<" " << segment.twist.twist.angular.z << std::endl;
                             std::string costs = computeMetrics(agent.track_id, now.toSec());
                             log_file_ << costs;
                         }

@@ -13,8 +13,9 @@ find_package(catkin REQUIRED COMPONENTS
   cohan_msgs
   roscpp
   rospy
-  tf
+  tf2
   roslib
+  tf2_geometry_msgs
 )
 
 find_package(Eigen3 REQUIRED)
@@ -30,7 +31,7 @@ include_directories(${EIGEN3_INCLUDE_DIRS})
 catkin_package(
  INCLUDE_DIRS include ${EXTERNAL_INCLUDE_DIRS}
  LIBRARIES cohan_metrics ${EXTERNAL_LIBS}
- CATKIN_DEPENDS geometry_msgs nav_msgs cohan_msgs roscpp rospy tf roslib
+ CATKIN_DEPENDS geometry_msgs nav_msgs cohan_msgs roscpp rospy tf2 roslib tf2_geometry_msgs
 )
 
 ###########

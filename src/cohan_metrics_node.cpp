@@ -1,5 +1,6 @@
 #include <cohan_metrics/cohan_metrics.hh>
 #define ROBOT_ODOM "/odom"
+// #define ROBOT_ODOM "/base_odometry/odom" // Change it based on the robot
 #define HUMANS_TOPIC "/tracked_agents"
 
 int main(int argc, char** argv){

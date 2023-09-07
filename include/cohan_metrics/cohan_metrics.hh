@@ -3,6 +3,11 @@
 
 #include <ros/ros.h>
 #include <ros/package.h>
+#include <tf2_ros/transform_listener.h>
+#include <geometry_msgs/TransformStamped.h>
+#include <geometry_msgs/PointStamped.h>
+#include <tf2_geometry_msgs/tf2_geometry_msgs.h>
+#include <tf2/utils.h>
 #include <nav_msgs/Odometry.h>
 #include <nav_msgs/OccupancyGrid.h>
 #include <cohan_msgs/TrackedAgents.h>
@@ -92,6 +97,7 @@ namespace cohan{
         nav_msgs::Odometry robot_odom;
         cohan_msgs::TrackedAgents agents_;
         ros::Subscriber r_odom_sub_, agents_sub_, map_sub_;
+        tf2_ros::Buffer tfBuffer;
         std::ofstream log_file_;
         ros::Timer timer;
         PoseSE2 robot_pose_, human_pose_;
@@ -104,6 +110,7 @@ namespace cohan{
         ros::Time surprise_last_compute_;
         bool robotIsMoving;
         Eigen::Vector2d robot_vel_;
+        double robot_omega_;
         bool processing_;
         bool robot_seen_;
 
