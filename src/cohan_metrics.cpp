@@ -186,6 +186,9 @@ namespace cohan{
                 }
 
             }
+	    else{
+		    c_visibility = 0;
+	    }
 
         }
 
