@@ -5,7 +5,7 @@
 int main(int argc, char** argv){
   ros::init(argc, argv, "cohan_metrics");
 
-  if(argc<3){
+  if(argc<2){
     cohan::Metrics metrics(ROBOT_ODOM,HUMANS_TOPIC,"log");
   }
   else{

@@ -73,20 +73,19 @@ namespace cohan{
 
         void agentsCB(const cohan_msgs::TrackedAgents::ConstPtr& agents_msg);
 
-        std::string computeMetrics(PoseSE2 &h_pose, PoseSE2 &r_pose, double time_stamp);
+        std::string computeMetrics(int agent_id, double time_stamp);
 
-        bool calculateSupriseMetrics(PoseSE2 &h_pose, PoseSE2 &r_pose);
+        bool calculateSupriseMetrics();
 
-        bool calculateDangerMetrics(PoseSE2 &h_pose, PoseSE2 &r_pose);
+        bool calculateDangerMetrics();
 
         bool inFOV(PoseSE2 &A, PoseSE2 &B, float fov);
 
-        bool robotSeen(PoseSE2 &robot_pose, PoseSE2 &human_pose);
+        bool checkrobotSeen();
 
         bool checkObstacleView(PoseSE2 &A_real, PoseSE2 &B_real);
 
         void mapCB(const nav_msgs::OccupancyGrid::ConstPtr& map);
-
       
       private:
 
@@ -94,6 +93,8 @@ namespace cohan{
         cohan_msgs::TrackedAgents agents_;
         ros::Subscriber r_odom_sub_, agents_sub_, map_sub_;
         std::ofstream log_file_;
+        ros::Timer timer;
+        PoseSE2 robot_pose_, human_pose_;
 
         //Metric costs
         double c_visibility, c_fear, c_panic, c_shock, c_react;
@@ -103,14 +104,14 @@ namespace cohan{
         ros::Time surprise_last_compute_;
         bool robotIsMoving;
         Eigen::Vector2d robot_vel_;
+        bool processing_;
+        bool robot_seen_;
 
         //Ros param variable
         double human_fov_; 
         ros::Duration seen_full_increase_durr_, seen_full_decrease_durr_;
         double human_radius_, robot_radius_;
         double proxemics_dist;
-
-
 
         //Map info
         std::vector<std::vector<int>> g_map_;
