@@ -116,11 +116,15 @@ namespace cohan{
                             cosy_cosp = 1 - 2 * (q.y * q.y + q.z * q.z);
                             theta_yaw = atan2(siny_cosp, cosy_cosp);
                             human_pose_ = PoseSE2(segment.pose.pose.position.x, segment.pose.pose.position.y, theta_yaw);
+                            human_vel_.coeffRef(0) = segment.twist.twist.linear.x;
+                            human_vel_.coeffRef(1) = segment.twist.twist.linear.y;
+                            human_omega_ = segment.twist.twist.angular.z;
+                            
 
                             //Logging the human data and the calculated metrics
                             log_file_ << std::fixed << std::setprecision(5) << now.toSec() << " : H"+std::to_string(agent.track_id)+" " << segment.pose.pose.position.x << " " << segment.pose.pose.position.y  << " " << theta_yaw << std::endl;
-                            log_file_ << std::fixed << std::setprecision(5) << now.toSec() << " : H"+std::to_string(agent.track_id)+"_SPEED "<< std::to_string(sqrt(pow(segment.twist.twist.linear.x,2) + pow(segment.twist.twist.linear.y,2))) << std::endl;
-                            log_file_ << std::fixed << std::setprecision(5) << now.toSec() << " : H"+std::to_string(agent.track_id)+"_VEL "<< segment.twist.twist.linear.x << " " << segment.twist.twist.linear.y <<" " << segment.twist.twist.angular.z << std::endl;
+                            log_file_ << std::fixed << std::setprecision(5) << now.toSec() << " : H"+std::to_string(agent.track_id)+"_SPEED "<< std::to_string(human_vel_.norm()) << std::endl;
+                            log_file_ << std::fixed << std::setprecision(5) << now.toSec() << " : H"+std::to_string(agent.track_id)+"_VEL "<< human_vel_.coeffRef(0) << " " << human_vel_.coeffRef(1) <<" " << human_omega_ << std::endl;
                             std::string costs = computeMetrics(agent.track_id, now.toSec());
                             log_file_ << costs;
                         }
@@ -216,7 +220,7 @@ namespace cohan{
             ttc  = 0.0;
         }
         else{
-            auto V = robot_vel_;
+            auto V = robot_vel_ - human_vel_;
             double C_dot_V = C.dot(V);
             if(C_dot_V > 0){
                 double V_sq = V.dot(V);

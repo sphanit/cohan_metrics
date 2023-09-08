@@ -109,8 +109,8 @@ namespace cohan{
         double seen_ratio;
         ros::Time surprise_last_compute_;
         bool robotIsMoving;
-        Eigen::Vector2d robot_vel_;
-        double robot_omega_;
+        Eigen::Vector2d robot_vel_, human_vel_;
+        double robot_omega_, human_omega_;
         bool processing_;
         bool robot_seen_;
 
