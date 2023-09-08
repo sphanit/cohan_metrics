@@ -224,14 +224,14 @@ namespace cohan{
             double C_dot_V = C.dot(V);
             if(C_dot_V > 0){
                 double V_sq = V.dot(V);
-                double f = (C_dot_V*C_dot_V) - (V_sq - (C_sq - radius_sum_sq));
+                double f = (C_dot_V*C_dot_V) - (V_sq * (C_sq - radius_sum_sq));
                 if(f > 0){
                     ttc = (C_dot_V - sqrt(f)) / V_sq;
                 }
                 else{
                     double g = sqrt(V_sq*C_sq - C_dot_V*C_dot_V);
                     
-                    if((g - (sqrt(V_sq)*radius_sum)) > 0.1){
+                    if((g - (sqrt(V_sq)*radius_sum)) > 0.3){
                         c_panic = sqrt(V_sq/C_sq)*(g/(g - (sqrt(V_sq)*radius_sum)));
                     }
                 }
