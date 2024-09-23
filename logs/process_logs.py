@@ -35,13 +35,12 @@ def display_log_end(file_path):
         sg.popup(f"Error: {e}")
 
 # Function to display the rest of the file content
-def display_file_content(file_path):
+def display_content(costs):
     try:
-        with open(file_path, "r") as file:
-            window["-CONTENT-"].update("")  # Clear content field
-            file.readline()  # Skip the first line since it's already displayed
-            for line in file:
-                window["-CONTENT-"].print(line.strip())  # Print rest of the lines
+        window["-CONTENT-"].update("")  # Clear content field
+        for hid, cost_array in costs.items():
+            window["-CONTENT-"].print(hid)
+            window["-CONTENT-"].print(cost_array)
     except Exception as e:
         sg.popup(f"Error: {e}")
 
@@ -129,8 +128,8 @@ while True:
 
     # When "Open" button is clicked, display the rest of the file content
     if event == "Calculate" and file_path:
-        # display_file_content(file_path)  # Display remaining content after first line
-        cohan_metrics.calculate([1726778680.56172, 1726778700.25461])
+        costs = cohan_metrics.calculate([1726778680.56172, 1726778700.25461])
+        display_content(costs)
 
 # Close the window
 window.close()
