@@ -35,12 +35,13 @@ def display_log_end(file_path):
         sg.popup(f"Error: {e}")
 
 # Function to display the rest of the file content
-def display_content(costs):
+def display_content(cost_set):
     try:
         window["-CONTENT-"].update("")  # Clear content field
-        for hid, cost_array in costs.items():
-            window["-CONTENT-"].print(hid)
-            window["-CONTENT-"].print(cost_array)
+        for costs in cost_set:
+            for hid, cost_array in costs.items():
+                window["-CONTENT-"].print(hid)
+                window["-CONTENT-"].print(cost_array)
     except Exception as e:
         sg.popup(f"Error: {e}")
 
@@ -61,11 +62,11 @@ layout = [
      sg.Text("Start Tag:"), sg.Input(size=(10, 1), key="-STARTTAG-", disabled=True), 
      sg.Text("End Tag:"), sg.Input(size=(10, 1), key="-ENDTAG-", disabled=True)],
     [sg.Button("Calculate"), sg.Button("Exit")],
-    [sg.Multiline(size=(60, 10), key="-CONTENT-", no_scrollbar=True)],  # No scrollbar in multiline
+    [sg.Multiline(size=(90, 10), key="-CONTENT-", no_scrollbar=False)],  # No scrollbar in multiline
 ]
 
 # Create the window
-window = sg.Window("CoHAN Metics", layout, finalize=True)
+window = sg.Window("CoHAN Metics", layout, finalize=False)
 
 cohan_metrics = MetricsData()
 
@@ -123,12 +124,12 @@ while True:
         if file_path:
             display_log_start(file_path)  # Display the first line immediately
             display_log_end(file_path)   # Display the last line immediately
-            cohan_metrics.load_data(file_path)
+            cohan_metrics.load_data(file_path, ["Dispatching", "FeedBack"])
             window["-HUMIDS-"].update(cohan_metrics.get_human_ids())
 
     # When "Open" button is clicked, display the rest of the file content
     if event == "Calculate" and file_path:
-        costs = cohan_metrics.calculate([1726778680.56172, 1726778700.25461])
+        costs = cohan_metrics.calculate(type="tag")
         display_content(costs)
 
 # Close the window
